@@ -28,12 +28,11 @@ class DistageApplicationLoader extends ApplicationLoader {
     }
 
     def componentsModule = new ModuleDef {
-      make[ContextBasedBuiltInComponents].fromValue {
+      make[ControllerComponents].fromValue {
         new BuiltInComponentsFromContext(context) with HttpFiltersComponents with AssetsComponents {
           override def router: Router = Router.empty
-        }
+        }.controllerComponents
       }
-      make[ControllerComponents].from((components: ContextBasedBuiltInComponents) => components.controllerComponents)
     }
 
     val module = componentsModule ++ new ModuleDef {
