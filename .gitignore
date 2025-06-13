@@ -1,0 +1,58 @@
+# sbt
+target/
+project/target/
+project/project/
+lib_managed/
+src_managed/
+.history
+.cache
+.ensime
+.ensime_cache/
+.idea/
+*.iml
+
+# bsp
+.bsp/
+
+# IntelliJ
+*.iws
+*.ipr
+*.iml
+out/
+
+# VS Code
+.vscode/
+
+# Mac OS
+.DS_Store
+
+# Logs
+logs/
+*.log
+
+# Play Framework
+tmp/
+dist/
+logs/
+project/project/
+
+# Coverage reports
+coverage/
+.coverage
+
+# Bloop
+.bloop/
+.metals/
+.ammonite/
+
+# Scala/Java build artifacts
+*.class
+*.log
+*.lock
+*.jar
+*.war
+*.zip
+
+# Other
+*.swp
+*~
