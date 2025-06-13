@@ -2,6 +2,7 @@ package app
 
 import controllers.AssetsComponents
 import controllers.HomeController
+import controllers.TimeController
 import distage.Activation
 import distage.Injector
 import distage.ModuleDef
@@ -16,6 +17,7 @@ import play.api.mvc.ControllerComponents
 import play.api.routing.Router
 import play.filters.HttpFiltersComponents
 import router.Routes
+import services.TimeService
 import zio.*
 
 class DistageApplicationLoader extends ApplicationLoader {
@@ -31,18 +33,21 @@ class DistageApplicationLoader extends ApplicationLoader {
           override def router: Router = Router.empty
         }
       }
+      make[ControllerComponents].from((components: ContextBasedBuiltInComponents) => components.controllerComponents)
     }
 
     val module = componentsModule ++ new ModuleDef {
-      make[ControllerComponents].from((components: ContextBasedBuiltInComponents) => components.controllerComponents)
+      make[Runtime[Any]].fromZIOEnv(ZIO.runtime[Any])
+      make[Clock].fromValue(Clock.ClockLive)
+      make[TimeService].fromZLayerEnv(TimeService.live)
+      make[TimeController]
       make[HomeController]
-      modify[ContextBasedBuiltInComponents].by(_.flatAp {
-        (homeController: HomeController) => (current: ContextBasedBuiltInComponents) =>
-          new BuiltInComponentsFromContext(context) with HttpFiltersComponents with AssetsComponents {
-            override def router: Router = current.router.orElse(new Routes(httpErrorHandler, homeController, assets))
-          }
-      })
-      make[Application].from((components: ContextBasedBuiltInComponents) => components.application)
+      make[Application].from { (homeController: HomeController, timeController: TimeController) =>
+        new BuiltInComponentsFromContext(context) with HttpFiltersComponents with AssetsComponents {
+          override def router: Router =
+            new Routes(httpErrorHandler, homeController, timeController, assets)
+        }.application
+      }
     }
 
     val injector = Injector[Task]()
